@@ -1,13 +1,16 @@
 from dotenv import load_dotenv
-from openai import OpenAI
+import os
+import google.generativeai as genai
 
-client = OpenAI()
+load_dotenv()
+api_key = os.getenv("GEMINI_API_KEY")
 
-text = "dog chases cat"
+genai.configure(api_key=api_key)
 
-response = client.embeddings.create(
-    model = "text-embedding-3-small", 
-    input=text
+result = genai.embed_content(
+    model="models/embedding-001",
+    content="What is the meaning of life?",
+    task_type="retrieval_document"
 )
 
-print(response)
+print(result['embedding'])
