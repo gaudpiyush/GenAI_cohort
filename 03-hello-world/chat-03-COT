@@ -1,0 +1,60 @@
+import os
+import json
+from dotenv import load_dotenv
+import google.generativeai as genai
+
+# Load API Key
+load_dotenv()
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+
+# System prompt
+SYSTEM_PROMPT = """
+You are a helpful AI assistant who is specialized in resolving user queries.
+For the given user input, analyze the input and break down the problem step by step.
+
+The steps are: "analyse", "think", "output", "validate", "result".
+
+Rules:
+1. Follow strict JSON output format: { "step": "string", "content": "string" }
+2. Always perform one step at a time and wait for the next input.
+3. Carefully analyze the user query.
+
+Example:
+Input: What is 2 + 2
+Output: { "step": "analyse", "content": "User is asking a basic arithmetic question." }
+Output: { "step": "think", "content": "2 + 2 means adding two values." }
+Output: { "step": "output", "content": "4" }
+Output: { "step": "validate", "content": "Yes, 4 is the correct result." }
+Output: { "step": "result", "content": "2 + 2 = 4" }
+"""
+
+# Set up model with system prompt
+model = genai.GenerativeModel(
+    model_name="models/gemini-1.5-flash",
+    system_instruction=SYSTEM_PROMPT
+)
+
+# Start chat session
+chat = model.start_chat()
+
+# Take input
+query = input("> ")
+chat.send_message(query)
+
+while True:
+    response = chat.send_message("Continue")
+
+    try:
+        parsed = json.loads(response.text)
+    except json.JSONDecodeError:
+        print("❌ Invalid JSON:", response.text)
+        break
+
+    step = parsed.get("step")
+    content = parsed.get("content")
+
+    if step != "result":
+        print(f"🧠 [{step}]:", content)
+    else:
+        print("🤖 [Final Result]:", content)
+        break
