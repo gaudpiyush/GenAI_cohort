@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from dotenv import load_dotenv
 import google.generativeai as genai
 
@@ -44,8 +45,11 @@ chat.send_message(query)
 while True:
     response = chat.send_message("Continue")
 
+    # Clean response text from markdown formatting
+    cleaned = re.sub(r"^```json|```$", "", response.text.strip(), flags=re.MULTILINE).strip()
+
     try:
-        parsed = json.loads(response.text)
+        parsed = json.loads(cleaned)
     except json.JSONDecodeError:
         print("❌ Invalid JSON:", response.text)
         break
