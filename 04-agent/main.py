@@ -60,13 +60,11 @@ chat = model.start_chat(history=messages)
 
 while True:
     query = input("> ")
-    response = chat.send_message(query)  # ✅ Store initial response
-    time.sleep(5)  # ⏳ Add delay
+    response = chat.send_message(query)
+    time.sleep(5)  
     raw = response.text.strip()
 
-    # 🔁 Main loop now includes first response parsing
     while True:
-        # Strip code block if needed
         if raw.startswith("```json"):
             raw = raw.replace("```json", "").replace("```", "").strip()
 
@@ -85,7 +83,6 @@ while True:
 
         if step == "plan":
             print(f"🧠: {parsed_response.get('content')}")
-            # ⏩ Then ask for next step
             response = chat.send_message(
                 "Continue with next step. REMEMBER: Reply ONLY in valid JSON format as specified."
             )
@@ -100,7 +97,6 @@ while True:
 
             if tool_name in available_tools:
                 output = available_tools[tool_name](tool_input)
-                # 🧠 Send observation
                 response = chat.send_message(json.dumps({
                     "step": "observe",
                     "output": output
